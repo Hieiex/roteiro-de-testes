@@ -165,7 +165,8 @@ function nomeAmigavel(raw) {
 }
 
 function descreverPasso(line) {
-  const l = String(line || '').trim();
+  // Aceita textos entre aspas duplas (testes escritos à mão) como se fossem simples.
+  const l = String(line || '').trim().replace(/"((?:\\"|[^"'])*)"/g, "'$1'");
   if (!l) return '';
   const first = (re) => { const m = l.match(re); return m ? nomeAmigavel(m[1]) : ''; };
   const alvo = first(/(?:page\.(?:click|fill|dblclick|hover)|page\.locator|page\.getByText)\(\s*'((?:\\'|[^'])*)'/);
