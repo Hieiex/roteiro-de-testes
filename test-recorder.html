@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Roteiro · Testes para QA</title>
+<style>
+  :root { --bg:#0f172a; --panel:#1e293b; --border:#334155; --text:#e2e8f0; --muted:#94a3b8; --green:#22c55e; --red:#ef4444; --amber:#f59e0b; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); padding:20px; line-height:1.6; }
+  header h1 { color:var(--green); font-size:1.4rem; margin-bottom:4px; }
+  header p { color:var(--muted); font-size:0.9rem; }
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; max-width:960px; }
+  .panel h2 { color:var(--green); margin-bottom:10px; font-size:1.1rem; }
+  label { display:block; font-size:0.82rem; color:var(--muted); margin-bottom:6px; }
+  input, textarea, select { background:#0f172a; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 11px; font-size:0.9rem; display:block; width:100%; max-width:460px; margin:6px 0; }
+  input:focus, textarea:focus, select:focus { outline:2px solid var(--amber); }
+  textarea { resize:vertical; min-height:58px; }
+  button { cursor:pointer; color:#0f172a; font-weight:600; border:none; border-radius:8px; padding:10px 14px; font-size:0.92rem; }
+  button.primary { background:var(--green); }
+  button.danger { background:var(--red); }
+  button.amber { background:var(--amber); }
+  button.blue { background:var(--blue); }
+  button.small { padding:6px 10px; font-size:0.8rem; }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  .step-list { border:1px solid var(--border); border-radius:8px; overflow:hidden; max-height:340px; overflow-y:auto; }
+  .step { display:flex; gap:8px; padding:8px 10px; align-items:center; border-bottom:1px solid #334155; }
+  .step:hover { background:#1e293b; }
+  .step.selected { outline:2px solid var(--amber); outline-offset:-2px; background:#334155; }
+  .step:last-child { border-bottom:none; }
+  .step-num { flex:0 0 26px; height:26px; border-radius:6px; background:#334155; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:0.78rem; cursor:pointer; }
+  .step-body { flex:1 1 auto; min-width:0; }
+  .step-body .row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .step-body .row input, .step-body .row select, .step-body .row textarea { max-width:240px; margin:2px 0; }
+  .badge { font-size:0.68rem; padding:1px 6px; border-radius:5px; background:#475569; color:var(--muted); }
+  .del { color:var(--red); cursor:pointer; font-size:1.1rem; line-height:1; }
+  .actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .status { color:var(--amber); font-size:0.82rem; margin-top:6px; }
+  .help-box { background:#0f172a; border-left:3px solid #38bdf8; padding:10px 14px; border-radius:8px; margin-bottom:10px; min-height:32px; font-size:0.85rem; color:#94a3b8; }
+  .help-box b { color:var(--text); }
+  .legend { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; font-size:0.78rem; }
+  .legend div { display:flex; gap:8px; align-items:center; }
+  .legend .typ { min-width:110px; font-weight:700; }
+  .legend .ex { color:#94a3b8; font-size:0.72rem; }
+  .warn { background:#450a0a; border:1px solid #7f1d1d; color:#fca5a5; padding:10px 12px; border-radius:8px; margin-top:10px; font-size:0.82rem; }
+  .runner-box { background:#0f172a; border:1px solid var(--border); border-radius:8px; padding:12px; min-height:180px; font-family:'SF Mono',Consolas,monospace; font-size:0.78rem; color:var(--text); white-space:pre-wrap; word-break:break-word; }
+  .tabs { display:flex; gap:6px; margin-bottom:12px; }
+  .tab-btn { font-size:0.82rem; padding:6px 12px; background:#334155; color:var(--muted); border:none; border-radius:8px; cursor:pointer; }
+  .tab-btn.active { background:var(--green); color:#0f172a; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+  .result { padding:12px; border-radius:8px; margin-top:8px; }
+  .result.pass { background:#14532d; border:1px solid #22c55e; color:#22c55e; }
+  .result.fail { background:#5c1a1a; border:1px solid #ef4444; color:#ef4444; }
+  .result.pending { background:#3b2f1e; border:1px solid var(--amber); color:var(--amber); }
+  footer { color:var(--muted); font-size:0.78rem; text-align:center; margin-top:20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📝 Roteiro</h1>
+  <p>Grave o teste, rode para ver funcionando e use <strong>4. Rodar em lote</strong> para executar vários de uma vez.</p>
+</header>
+
+<div class="panel">
+  <h2>1. Configuração</h2>
+  <input id="engine" type="hidden" value="playwright" />
+  <p class="status">Monte os passos (ou grave no Chrome) e clique em Ver no navegador. Não precisa editar código.</p>
+  <label>Teste salvo</label>
+  <select id="savedTests"></select>
+  <button id="reloadTest" class="primary small" type="button">Recarregar para editar</button>
+  <label>Nome do arquivo</label>
+  <input id="testName" value="meu-roteiro" />
+  <label>URL do sistema</label>
+  <input id="url" value="http://localhost:3000" />
+  <label>E-mail</label>
+  <input id="email" placeholder="usuario@exemplo.com" />
+  <label>Senha</label>
+  <input id="senha" type="password" placeholder="••••••••" />
+  <p class="status">No valor de um passo, use {{email}} e {{senha}} para aproveitar os campos acima.</p>
+</div>
+
+<div class="panel">
+  <h2>Gravar no Chrome</h2>
+  <p class="status">Abre o Chrome já gravando. A QA usa o sistema como faria no dia a dia. Ao fechar a janela, o teste Playwright fica salvo, com os seletores que o gravador escolheu.</p>
+  <div class="actions">
+    <button id="recordChrome" class="primary" type="button">Gravar no Chrome</button>
+  </div>
+  <label style="margin-top:12px;">Ou importe a exportação do Recorder do DevTools: JSON ou script Puppeteer</label>
+  <input id="chromeFile" type="file" accept=".json,.js,application/json,text/javascript" />
+  <p id="recordStatus" class="status"></p>
+</div>
+
+<div class="panel">
+  <h2>2. Passos</h2>
+  <div class="actions" style="margin-bottom:10px;">
+    <select id="tipo" style="max-width:460px;">
+      <option value="navegar">Navegar até</option>
+      <option value="preencher">Preencher campo</option>
+      <option value="clicar">Clicar (botão/link)</option>
+      <option value="escolher">Escolher opção</option>
+      <option value="aparece">Verificar que aparece o texto</option>
+      <option value="url">Verificar endereço (URL)</option>
+      <option value="texto">Verificar texto em um campo (avançado)</option>
+      <option value="ss">Fazer screenshot</option>
+      <option value="nota">Nota</option>
+    </select>
+    <button id="addStep" class="primary">+ Adicionar passo</button>
+  </div>
+  <div class="help-box" id="help">
+    <b>Como usar:</b> selecione o tipo de passo acima. Exemplo de seletor:
+  </div>
+  <div id="legend" class="legend"></div>
+  <div class="step-list" id="list"></div>
+  <div class="actions">
+    <button id="up" class="small">↑ Subir</button>
+    <button id="down" class="small">↓ Descer</button>
+    <button id="del" class="small danger">🗑 Excluir</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>3. Executar & Salvar</h2>
+  <div class="actions">
+    <button id="runSaved" class="primary" type="button">Ver no navegador</button>
+    <button id="runQuiet" class="small" type="button">Rodar sem abrir</button>
+    <button id="save" class="small" type="button">Salvar teste</button>
+  </div>
+  <div id="status" class="status"></div>
+  <div id="result" class="result pending">⏳ Aguardando execução...</div>
+  <div id="log" class="runner-box" style="min-height:120px;white-space:pre-wrap;"></div>
+</div>
+
+<div class="panel" id="batchPanel">
+  <h2>4. Rodar em lote</h2>
+  <p class="status">Marque os testes (só Playwright) e rode todos de uma vez. Ao final você vê quais passaram e quais falharam.</p>
+  <div class="actions" style="margin:10px 0;">
+    <button id="batchAll" class="small" type="button">Marcar todos</button>
+    <button id="batchNone" class="small" type="button">Desmarcar todos</button>
+  </div>
+  <div id="batchList" class="step-list" style="max-height:220px;"></div>
+  <label style="margin-top:10px;"><input id="batchHeaded" type="checkbox" style="display:inline;width:auto;margin:0 6px 0 0;" /> Ver o navegador rodando (um teste por vez, mais lento)</label>
+  <label>Testes ao mesmo tempo (sem ver o navegador)</label>
+  <select id="batchWorkers" style="max-width:120px;"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+  <div class="actions">
+    <button id="batchRun" class="primary" type="button">Rodar selecionados</button>
+  </div>
+  <div id="batchSummary" class="result pending" style="display:none;"></div>
+  <div id="batchResults" style="margin-top:8px;"></div>
+</div>
+
+<footer>Roteiro · grave, rode e acompanhe testes do seu sistema</footer>
+
+<script>
+(function () {
+  const engineInput = document.getElementById('engine');
+  const runSaved = document.getElementById('runSaved');
+  const runQuiet = document.getElementById('runQuiet');
+  const savedTests = document.getElementById('savedTests');
+  const reloadTest = document.getElementById('reloadTest');
+  const testNameInput = document.getElementById('testName');
+  const urlInput = document.getElementById('url');
+  const emailInput = document.getElementById('email');
+  const senhaInput = document.getElementById('senha');
+  const tipo = document.getElementById('tipo');
+  const addStep = document.getElementById('addStep');
+  const list = document.getElementById('list');
+  const up = document.getElementById('up');
+  const down = document.getElementById('down');
+  const del = document.getElementById('del');
+  const save = document.getElementById('save');
+  const recordChrome = document.getElementById('recordChrome');
+  const chromeFile = document.getElementById('chromeFile');
+  const recordStatus = document.getElementById('recordStatus');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  const log = document.getElementById('log');
+  const legend = document.getElementById('legend');
+
+  function on(el, type, fn) {
+    if (el) el.addEventListener(type, fn);
+  }
+
+  let steps = [];
+  let selectedStepIndex = -1;
+  let lastRecorded = '';
+
+  function playwrightFileName() {
+    const base = (testNameInput.value || 'gravacao')
+      .toLowerCase()
+      .replace(/\.spec\.js$/i, '')
+      .replace(/\.cy\.js$/i, '')
+      .replace(/[^a-z0-9-_]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return (base || 'gravacao') + '.spec.js';
+  }
+
+  const STEP_HELP = {
+    navegar: 'Abre uma nova página / recarrega a aba. Ex.: https://sistema-exemplo.com',
+    preencher: 'Digita um valor em um campo de texto. Ex.: input[name="email"]',
+    clicar: 'Clica em um botão ou link. Ex.: button, a[href="/produtos"]',
+    escolher: 'Escolhe uma opção de um select. No seletor, o select ou o rótulo. No valor, o value da opção. Ex.: País → Brasil',
+    url: 'Espera a URL chegar na rota e a página terminar de carregar. Ex.: /produtos',
+    aparece: 'Confere que um texto aparece na tela. Escreva só o texto. Ex.: Bem-vindo',
+    texto: 'Avançado: confere o texto dentro de um campo específico. Ex.: #msg, p',
+    ss: 'Tira uma foto da tela (evidência)',
+    nota: 'Anotação interna (não gera código)',
+    tecla: 'Pressiona uma tecla. Ex.: Enter, Tab, Control',
+    tela: 'Define a largura e a altura da janela. Ex.: 1920 e 911'
+  };
+
+  // [texto do 1º campo, texto do 2º campo]; '' no 2º campo esconde o campo
+  const PLACEHOLDERS = {
+    navegar: ['Endereço da página (URL)', ''],
+    preencher: ['Campo (ex.: #email ou nome do campo)', 'O que digitar (ou {{email}} / {{senha}})'],
+    clicar: ['Botão ou texto a clicar', ''],
+    tecla: ['Tecla (Enter, Tab...)', ''],
+    tela: ['Largura', 'Altura'],
+    escolher: ['Campo da lista', 'Opção a escolher'],
+    aparece: ['Texto que deve aparecer na tela', ''],
+    url: ['Parte do endereço esperado', ''],
+    texto: ['Campo (seletor)', 'Texto esperado'],
+    ss: ['Nome da foto', ''],
+    nota: ['', '']
+  };
+
+  function esc(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function jsString(s) {
+    return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r/g, '\\r').replace(/\n/g, '\\n');
+  }
+
+  function readStepsFromForm() {
+    const stepEls = list.querySelectorAll('.step');
+    stepEls.forEach((div, i) => {
+      if (!steps[i]) return;
+      const typeEl = div.querySelector('select');
+      const inputs = div.querySelectorAll('input');
+      if (typeEl) steps[i].type = typeEl.value;
+      if (inputs[0]) steps[i].selector = inputs[0].value;
+      if (inputs[1]) steps[i].value = inputs[1].value;
+      if (inputs[2]) steps[i].note = inputs[2].value;
+    });
+  }
+
+  function specFileName() {
+    const base = (testNameInput.value || 'roteiro')
+      .toLowerCase()
+      .replace(/\.spec\.js$/i, '')
+      .replace(/\.cy\.js$/i, '')
+      .replace(/[^a-z0-9-_]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return (base || 'roteiro') + '.spec.js';
+  }
+
+  function currentEngine() {
+    return 'playwright';
+  }
+
+  // ---------- Passos ----------
+  function addStepObj(type, sel, val) {
+    steps.push({ type: type, selector: sel || '', value: val || '', note: '' });
+    setSelected(steps.length - 1);
+  }
+
+  function setSelected(i, skipRead) {
+    if (!skipRead) readStepsFromForm();
+    selectedStepIndex = i;
+    renderList();
+    generateCode();
+    const current = list.querySelector('.step.selected');
+    if (current) current.scrollIntoView({ block: 'nearest' });
+  }
+
+  function renderList() {
+    list.innerHTML = '';
+    let last = null;
+    steps.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'step' + (i === selectedStepIndex ? ' selected' : '');
+      div.dataset.idx = i;
+      div.innerHTML = `
+        <div class="step-num">${i + 1}</div>
+        <div class="step-body">
+          <div class="row">
+            <select class="st${i}" style="flex:0 0 140px;">
+              <option value="navegar" ${s.type === 'navegar' ? 'selected' : ''}>Navegar até</option>
+              <option value="preencher" ${s.type === 'preencher' ? 'selected' : ''}>Preencher campo</option>
+              <option value="clicar" ${s.type === 'clicar' ? 'selected' : ''}>Clicar</option>
+              <option value="tecla" ${s.type === 'tecla' ? 'selected' : ''}>Tecla</option>
+              <option value="tela" ${s.type === 'tela' ? 'selected' : ''}>Tamanho da tela</option>
+              <option value="escolher" ${s.type === 'escolher' ? 'selected' : ''}>Escolher opção</option>
+              <option value="aparece" ${s.type === 'aparece' ? 'selected' : ''}>Verificar que aparece o texto</option>
+              <option value="url" ${s.type === 'url' ? 'selected' : ''}>Verificar endereço (URL)</option>
+              <option value="texto" ${s.type === 'texto' ? 'selected' : ''}>Verificar texto em um campo (avançado)</option>
+              <option value="ss" ${s.type === 'ss' ? 'selected' : ''}>Screenshot</option>
+              <option value="nota" ${s.type === 'nota' ? 'selected' : ''}>Nota</option>
+            </select>
+            <input class="sel${i}" placeholder="${esc((PLACEHOLDERS[s.type] || ['Seletor / URL', ''])[0])}" value="${esc(s.selector)}" />
+            <input class="val${i}" placeholder="${esc((PLACEHOLDERS[s.type] || ['', 'Valor / texto'])[1])}" value="${esc(s.value)}" style="${(PLACEHOLDERS[s.type] || [])[1] === '' ? 'display:none;' : ''}" />
+            <button class="small danger delStep">x</button>
+          </div>
+          <div class="row" style="margin-top:4px;">
+            <input class="note${i}" placeholder="Notas" value="${esc(s.note)}" style="flex:1 1;" />
+          </div>
+          <div style="margin-top:4px; font-size:0.78rem; color:#94a3b8;">
+            <b>Instruções:</b> ${esc(STEP_HELP[s.type] || s.type)}
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+      last = div;
+
+      on(div.querySelector('.st' + i), 'change', () => {
+        setSelected(i);
+      });
+
+      on(div, 'mousedown', (event) => {
+        if (event.target.closest('button')) return;
+        if (i === selectedStepIndex) return;
+        const field = event.target;
+        const fieldClass = field.className;
+        const caret = typeof field.selectionStart === 'number' ? field.selectionStart : null;
+        setSelected(i);
+        if (!fieldClass || (field.tagName !== 'INPUT' && field.tagName !== 'SELECT')) return;
+        const next = list.querySelector('.' + fieldClass);
+        if (!next) return;
+        next.focus();
+        if (caret != null && next.setSelectionRange) next.setSelectionRange(caret, caret);
+      });
+
+      on(div.querySelector('.delStep'), 'click', () => {
+        readStepsFromForm();
+        steps.splice(i, 1);
+        if (selectedStepIndex >= steps.length) selectedStepIndex = steps.length - 1;
+        if (selectedStepIndex < 0 && steps.length > 0) selectedStepIndex = 0;
+        setSelected(selectedStepIndex, true);
+      });
+    });
+  }
+
+  function stepValue(raw, email, senha) {
+    if (raw === '{{email}}') return email ? 'EMAIL' : null;
+    if (raw === '{{senha}}') return senha ? 'PASSWORD' : null;
+    return "'" + jsString(raw) + "'";
+  }
+
+  // ---------- Gerar código ----------
+  function generateCode() {
+    readStepsFromForm();
+    if (!steps.length) {
+      log.textContent = 'Nenhum passo gravado. Adicione acima para gerar o código.';
+      result.className = 'result pending';
+      result.textContent = '⏳ Aguardando execução...';
+      return '';
+    }
+    const url = urlInput.value.trim() || 'http://localhost:3000';
+    const email = emailInput.value.trim();
+    const senha = senhaInput.value.trim();
+    const title = (testNameInput.value || 'roteiro').trim();
+    const nonNota = steps.filter(s => s.type !== 'nota');
+
+    if (nonNota.length === 0) {
+      log.textContent = 'Nenhum passo de ação. Adicione pelo menos um passo antes de gerar.';
+      result.className = 'result pending';
+      return '';
+    }
+
+    const invalid = [];
+    steps.forEach((s, i) => {
+      if (s.type !== 'nota' && s.type !== 'ss' && !(s.selector || '').trim()) invalid.push(i + 1);
+    });
+    if (invalid.length) {
+      log.textContent = 'Seletor vazio no(s) passo(s) ' + invalid.join(', ') + '.';
+      result.className = 'result fail';
+      result.textContent = 'Falta o seletor nos passos acima.';
+      return '';
+    }
+
+    const pad = '  ';
+    const firstAction = steps.find((s) => s.type !== 'nota');
+    const hasOwnStart = firstAction && (firstAction.type === 'navegar' || firstAction.type === 'tela');
+    const lines = [];
+    lines.push("import { test, expect } from '@playwright/test';");
+    lines.push("");
+    if (!hasOwnStart) lines.push("const BASE_URL = '" + jsString(url) + "';");
+    if (email) lines.push("const EMAIL = process.env.TESTE_EMAIL ?? '';");
+    if (senha) lines.push("const PASSWORD = process.env.TESTE_SENHA ?? '';");
+    lines.push("");
+    lines.push("test('" + jsString(title) + "', async ({ page }) => {");
+    lines.push("  test.setTimeout(90000);");
+    if (!hasOwnStart) lines.push("  await page.goto(BASE_URL);");
+    if (steps.some((s) => s.type === 'preencher' && String(s.selector || '').startsWith('text='))) {
+      lines.push("  async function preencherRotulo(rotulo, valor) {");
+      lines.push("    const campo = page.getByLabel(rotulo).first();");
+      lines.push("    const ehLista = await campo.evaluate((el) => el.tagName === 'SELECT');");
+      lines.push("    if (ehLista) await campo.selectOption(valor); else await campo.fill(valor);");
+      lines.push("  }");
+    }
+
+    function clickSelector(selector) {
+      const raw = String(selector || '');
+      const role = raw.match(/^role=button\[name="(.*)"s?\]$/);
+      if (!role) return raw;
+      return 'button:text-is("' + role[1] + '")';
+    }
+
+    for (let i = 0; i < steps.length; i++) {
+      const s = steps[i];
+      const sel = "'" + jsString(s.selector) + "'";
+      if (s.type === 'nota') {
+        lines.push(pad + "// NOTA: " + (s.note || '(sem nota)').replace(/\r?\n/g, ' '));
+        continue;
+      }
+      if (s.type === 'navegar') {
+        lines.push(pad + "await page.goto(" + sel + ");");
+        continue;
+      }
+      if (s.type === 'preencher') {
+        const filled = stepValue(s.value, email, senha);
+        if (!filled) {
+          log.textContent = 'O passo ' + (i + 1) + ' usa ' + s.value + ', mas o campo correspondente está vazio.';
+          result.className = 'result fail';
+          return '';
+        }
+        lines.push(pad + (String(s.selector || '').startsWith('text=')
+          ? "await preencherRotulo('" + jsString(s.selector.slice(5)) + "', " + filled + ");"
+          : "await page.fill(" + sel + ", " + filled + ");"));
+        continue;
+      }
+      if (s.type === 'clicar') {
+        const target = clickSelector(s.selector);
+        const quoted = "'" + jsString(target) + "'";
+        lines.push(pad + "await page.click(" + quoted + ");");
+        continue;
+      }
+      if (s.type === 'tecla') {
+        lines.push(pad + "await page.keyboard.press(" + sel + ");");
+        continue;
+      }
+      if (s.type === 'tela') {
+        const width = Number(s.selector);
+        const height = Number(s.value);
+        if (width && height) {
+          lines.push(pad + "await page.setViewportSize({ width: " + width + ", height: " + height + " });");
+        }
+        continue;
+      }
+      if (s.type === 'escolher') {
+        const label = "'" + jsString(s.value) + "'";
+        const raw = String(s.selector || '');
+        const nome = raw.startsWith('text=') ? raw.slice(5) : raw;
+        const apontaSelect = /(^|[\s>+~])select\b/.test(raw);
+        const alvo = apontaSelect
+          ? "page.locator(" + sel + ")"
+          : "page.getByLabel('" + jsString(nome) + "')";
+        lines.push(pad + "await " + alvo + ".selectOption(" + label + ");");
+        continue;
+      }
+      if (s.type === 'url') {
+        const needle = "'" + jsString(String(s.selector || '').trim().replace(/\/+$/, '')) + "'";
+        lines.push(pad + "await page.waitForURL(url => url.href.replace(/\\/+$/, '').includes(" + needle + "), { timeout: 30000, waitUntil: 'commit' });");
+        lines.push(pad + "await Promise.race([page.waitForLoadState('networkidle'), page.waitForTimeout(8000)]);");
+        lines.push(pad + "if (process.env.PW_VER === '1') await page.waitForTimeout(2000);");
+        continue;
+      }
+      if (s.type === 'aparece') {
+        const wanted = "'" + jsString(s.selector) + "'";
+        lines.push(pad + "await expect(page.getByText(" + wanted + ").first()).toBeVisible({ timeout: 15000 });");
+        continue;
+      }
+      if (s.type === 'texto') {
+        const text = "'" + jsString(s.value) + "'";
+        lines.push(pad + "await expect(page.locator(" + sel + ")).toContainText(" + text + ");");
+        continue;
+      }
+      if (s.type === 'ss') {
+        const safePath = (s.selector || 'ss').replace(/[^a-zA-Z0-9_.-]/g, '_');
+        lines.push(pad + "await page.screenshot({ path: 'test-results/" + safePath + ".png' });");
+      }
+    }
+
+    lines.push("});");
+
+    const code = lines.join('\n') + '\n';
+    log.textContent = code;
+    result.className = 'result';
+    result.textContent = 'Pronto. Clique em Ver no navegador.';
+    return code;
+  }
+
+  // ---------- Eventos ----------
+  on(addStep, 'click', () => {
+    const t = tipo.value;
+    addStepObj(t, '', '');
+    const help = document.getElementById('help');
+    help.innerHTML = '<b>' + esc(STEP_HELP[t] || t) + '</b>';
+  });
+
+  on(up, 'click', () => {
+    if (steps.length < 2) return;
+    readStepsFromForm();
+    let idx = selectedStepIndex;
+    if (idx < 0) idx = steps.length - 1;
+    if (idx <= 0) return;
+    [steps[idx - 1], steps[idx]] = [steps[idx], steps[idx - 1]];
+    setSelected(idx - 1, true);
+  });
+
+  on(down, 'click', () => {
+    if (steps.length < 2) return;
+    readStepsFromForm();
+    let idx = selectedStepIndex;
+    if (idx < 0) idx = steps.length - 1;
+    if (idx >= steps.length - 1) return;
+    [steps[idx + 1], steps[idx]] = [steps[idx], steps[idx + 1]];
+    setSelected(idx + 1, true);
+  });
+
+  on(del, 'click', () => {
+    if (steps.length === 0) return;
+    readStepsFromForm();
+    let idx = selectedStepIndex;
+    if (idx < 0) idx = steps.length - 1;
+    steps.splice(idx, 1);
+    if (selectedStepIndex >= steps.length) selectedStepIndex = steps.length - 1;
+    if (selectedStepIndex < 0 && steps.length > 0) selectedStepIndex = 0;
+    setSelected(selectedStepIndex, true);
+  });
+
+  // ---------- Salvar ----------
+  function downloadSpec(fileName, code) {
+    const blob = new Blob([code], { type: 'application/octet-stream' });
+    const urlObj = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = urlObj;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(urlObj);
+  }
+
+  async function saveTest() {
+    const code = generateCode();
+    const engine = currentEngine();
+    const recognizable = code.includes("from '@playwright/test'");
+    if (!code || !recognizable) {
+      status.textContent = log.textContent || 'Nenhum teste para salvar.';
+      return null;
+    }
+    const fileName = specFileName();
+
+    try {
+      const res = await fetch('/api/tests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName, code, engine })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const temVerificacao = steps.some((s) => s.type === 'url' || s.type === 'texto' || s.type === 'aparece');
+        status.textContent = 'Salvo em ' + data.path + '.' + (temVerificacao ? '' :
+          ' ⚠ Atenção: este teste não verifica nada. Ele só clica e pode passar mesmo com a tela errada. Adicione um passo "Verificar que aparece o texto".');
+        await refreshSavedTests(engine + '|' + fileName);
+        return { fileName, engine };
+      }
+      status.textContent = await res.text();
+      return null;
+    } catch (err) {
+      // Gravador aberto fora do servidor local: cai no diálogo de arquivo.
+    }
+
+    try {
+      if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{ description: 'Teste Playwright', accept: { 'text/javascript': ['.js'] } }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(code);
+        await writable.close();
+        status.textContent = 'Arquivo ' + fileName + ' salvo. Coloque em tests/e2e/gravados e rode npm run e2e.';
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        status.textContent = 'Salvamento cancelado.';
+        return;
+      }
+    }
+
+    downloadSpec(fileName, code);
+    status.textContent = 'Download de ' + fileName + '. Abra o gravador em http://127.0.0.1:4173 para salvar na pasta certa.';
+    return null;
+  }
+
+  on(save, 'click', () => saveTest());
+
+  async function watchRun(headed) {
+    const started = Date.now();
+    while (Date.now() - started < 180000) {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      const res = await fetch('/api/run');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.log) log.textContent = data.log;
+      if (data.status === 'running') {
+        result.className = 'result pending';
+        result.textContent = headed ? 'Executando no navegador...' : 'Executando sem abrir o navegador...';
+        continue;
+      }
+      if (data.status === 'saved') {
+        result.className = 'result pass';
+        result.textContent = 'Gravação salva.';
+        status.textContent = 'O teste gravado no Chrome já está na lista.';
+        if (recordStatus) recordStatus.textContent = 'Gravação salva. Escolha o teste e rode.';
+        await refreshSavedTests(lastRecorded ? 'playwright|' + lastRecorded : '');
+        return;
+      }
+      if (data.status === 'passed') {
+        result.className = 'result pass';
+        const item = data.results && data.results.items && data.results.items[0];
+        result.textContent = item && item.semVerificacao
+          ? 'Teste passou, mas ele não verifica nada. Adicione um passo "Verificar que aparece o texto" para ter certeza de que a tela está certa.'
+          : 'Teste passou.';
+        status.textContent = 'Concluído.';
+        return;
+      }
+      if (data.status === 'failed' || data.status === 'error') {
+        result.className = 'result fail';
+        const bad = data.results && data.results.items && data.results.items.find((i) => i.status === 'failed');
+        result.textContent = bad
+          ? 'O teste falhou' + (bad.passo ? ' em: ' + bad.passo : '') + '. ' + bad.motivo
+          : 'O teste falhou. O detalhe está abaixo.';
+        status.textContent = 'A execução terminou com erro.';
+        return;
+      }
+    }
+  }
+
+  async function startRun(headed) {
+    const saved = await saveTest();
+    if (!saved) return;
+    try {
+      const res = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: saved.fileName, engine: saved.engine, headed: headed })
+      });
+      if (!res.ok) {
+        status.textContent = await res.text();
+        result.className = 'result fail';
+        result.textContent = 'Não foi possível iniciar.';
+        return;
+      }
+      status.textContent = headed
+        ? 'Abrindo o navegador com ' + saved.fileName + '.'
+        : 'Rodando ' + saved.fileName + ' sem abrir o navegador.';
+      result.className = 'result pending';
+      result.textContent = headed ? 'Executando no navegador...' : 'Executando sem abrir o navegador...';
+      log.textContent = '';
+      await watchRun(headed);
+    } catch (err) {
+      status.textContent = 'Não foi possível iniciar. Abra o gravador em http://127.0.0.1:4173.';
+    }
+  }
+
+  on(runSaved, 'click', () => startRun(true));
+  on(runQuiet, 'click', () => startRun(false));
+
+  on(recordChrome, 'click', async () => {
+    const url = urlInput.value.trim();
+    if (!url) {
+      recordStatus.textContent = 'Informe a URL do sistema antes de gravar.';
+      return;
+    }
+    recordChrome.disabled = true;
+    recordStatus.textContent = 'Abrindo o Chrome para gravar...';
+    try {
+      const res = await fetch('/api/record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: playwrightFileName(), url: url })
+      });
+      if (!res.ok) {
+        recordStatus.textContent = await res.text();
+        recordChrome.disabled = false;
+        return;
+      }
+      const started = await res.json();
+      lastRecorded = started.fileName || playwrightFileName();
+      recordStatus.textContent = 'Chrome aberto. Navegue, clique e preencha. Feche a janela para salvar o teste.';
+      result.className = 'result pending';
+      result.textContent = 'Gravando no Chrome...';
+      await watchRun(true);
+    } catch (err) {
+      recordStatus.textContent = 'Não foi possível abrir o gravador. Use esta página em http://127.0.0.1:4173.';
+    }
+    recordChrome.disabled = false;
+  });
+
+  on(chromeFile, 'change', async () => {
+    const file = chromeFile.files && chromeFile.files[0];
+    if (!file) return;
+    recordStatus.textContent = 'Importando ' + file.name + '...';
+    try {
+      const source = await file.text();
+      const res = await fetch('/api/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: playwrightFileName(), source: source, title: testNameInput.value.trim() })
+      });
+      if (!res.ok) {
+        recordStatus.textContent = await res.text();
+        return;
+      }
+      const data = await res.json();
+      recordStatus.textContent = 'Importado em ' + data.path + '.';
+      engineInput.value = 'playwright';
+      await refreshSavedTests('playwright|' + data.fileName);
+      await loadSelected();
+    } catch (err) {
+      recordStatus.textContent = 'Não foi possível importar. Abra o gravador em http://127.0.0.1:4173.';
+    }
+    chromeFile.value = '';
+  });
+
+  // ---------- Legenda ----------
+  const LEGEND = [
+    ['Navegar até', 'Abre uma nova página / recarrega a aba'],
+    ['Preencher campo', 'Digita um valor em um campo de texto'],
+    ['Clicar', 'Clica em um botão ou link'],
+    ['Tecla', 'Pressiona uma tecla, como Enter ou Tab'],
+    ['Tamanho da tela', 'Define a largura e a altura da janela'],
+    ['Escolher opção', 'Escolhe o value de um select, como pf ou pj'],
+    ['Verificar que aparece o texto', 'Confere que um texto está visível na tela. É a forma mais simples de validar o resultado.'],
+    ['Verificar endereço', 'Espera a rota e a página terminar de carregar'],
+    ['Verificar texto em campo', 'Avançado: confere o texto dentro de um campo específico'],
+    ['Fazer screenshot', 'Tira uma foto da tela (evidência)'],
+    ['Nota', 'Anotação interna (não gera código)']
+  ];
+  if (legend) LEGEND.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #334155;font-size:0.82rem;';
+    div.innerHTML = '<div style="flex:0 0 110px;font-weight:700;color:#e2e8f0;">' + esc(row[0]) + '</div>' +
+      '<div style="color:#94a3b8;font-size:0.78rem;">' + esc(row[1]) + '</div>';
+    legend.appendChild(div);
+  });
+
+  function readQuoted(line, start) {
+    const quote = line[start];
+    if (quote !== "'" && quote !== '"') return null;
+    let value = '';
+    for (let i = start + 1; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '\\') {
+        const next = line[++i];
+        if (next === 'n') value += '\n';
+        else if (next === 'r') value += '\r';
+        else value += next || '';
+        continue;
+      }
+      if (ch === quote) return { value: value, end: i + 1 };
+      value += ch;
+    }
+    return null;
+  }
+
+  function quotedValue(line) {
+    const eq = line.indexOf('=');
+    const from = eq >= 0 ? eq : 0;
+    const single = line.indexOf("'", from);
+    const double = line.indexOf('"', from);
+    const at = single < 0 ? double : double < 0 ? single : Math.min(single, double);
+    if (at < 0) return null;
+    return readQuoted(line, at);
+  }
+
+  function parseSpec(code) {
+    const loaded = { name: '', url: '', email: '', senha: '', steps: [], engine: 'playwright' };
+    const lines = String(code || '').split(/\r?\n/);
+    lines.forEach((raw) => {
+      const line = raw.trim();
+      let quoted = null;
+      if (line.startsWith('const BASE_URL')) {
+        quoted = quotedValue(line);
+        if (quoted) loaded.url = quoted.value.trim();
+        return;
+      }
+      if (line.startsWith('const EMAIL')) {
+        quoted = quotedValue(line);
+        if (quoted) loaded.email = quoted.value;
+        return;
+      }
+      if (line.startsWith('const PASSWORD')) {
+        quoted = quotedValue(line);
+        if (quoted) loaded.senha = quoted.value;
+        return;
+      }
+      if (line.startsWith("test('") || line.startsWith('test("')) {
+        quoted = readQuoted(line, 5);
+        if (quoted) loaded.name = quoted.value;
+        return;
+      }
+      if (line === 'await page.goto(BASE_URL);' || line.startsWith('test.setTimeout') || line === '});' || line === '') {
+        return;
+      }
+      if (line.startsWith('// NOTA:')) {
+        loaded.steps.push({ type: 'nota', selector: '', value: '', note: line.slice(8).trim() });
+        return;
+      }
+      if (line.startsWith('await preencherRotulo(')) {
+        const nomeAt = line.indexOf("'", line.indexOf('('));
+        const nome = nomeAt >= 0 ? readQuoted(line, nomeAt) : null;
+        const valor = nome ? readQuoted(line, line.indexOf("'", nome.end)) : null;
+        if (nome) loaded.steps.push({ type: 'preencher', selector: 'text=' + nome.value, value: valor ? valor.value : '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.goto(')) {
+        quoted = readQuoted(line, line.indexOf('(') + 1);
+        if (quoted) loaded.steps.push({ type: 'navegar', selector: quoted.value, value: '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.fill(')) {
+        const sel = readQuoted(line, line.indexOf('(') + 1);
+        if (!sel) return;
+        const rest = line.slice(sel.end).replace(/^,\s*/, '');
+        let value = '';
+        if (rest.startsWith('EMAIL')) value = '{{email}}';
+        else if (rest.startsWith('PASSWORD')) value = '{{senha}}';
+        else {
+          const filled = readQuoted(rest, 0);
+          value = filled ? filled.value : '';
+        }
+        loaded.steps.push({ type: 'preencher', selector: sel.value, value: value, note: '' });
+        return;
+      }
+      if (line.startsWith('await page.click(')) {
+        quoted = readQuoted(line, line.indexOf('(') + 1);
+        if (quoted) loaded.steps.push({ type: 'clicar', selector: quoted.value, value: '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.locator(') || line.startsWith('await page.getByText(')) {
+        const quotedSel = readQuoted(line, line.indexOf('(') + 1);
+        if (!quotedSel) return;
+        const rest = line.slice(quotedSel.end);
+        const method = rest.match(/\)\.(click|dblclick|hover|fill|selectOption)\(/);
+        if (!method) return;
+        let selector = quotedSel.value;
+        if (line.startsWith('await page.getByText(')) selector = 'text=' + selector;
+        else if (selector.startsWith('::-p-text(') && selector.endsWith(')')) selector = 'text=' + selector.slice('::-p-text('.length, -1);
+        if (method[1] === 'selectOption' || (method[1] === 'fill' && /(^|[\s>+~])select\b/.test(selector))) {
+          const picked = readQuoted(rest, rest.indexOf('.' + method[1] + '(') + method[1].length + 2);
+          loaded.steps.push({ type: 'escolher', selector: selector, value: picked ? picked.value : '', note: '' });
+          return;
+        }
+        if (method[1] === 'fill') {
+          const argAt = rest.indexOf('.fill(') + '.fill('.length;
+          const argText = rest.slice(argAt);
+          const filled = readQuoted(rest, argAt);
+          const fillValue = argText.startsWith('EMAIL') ? '{{email}}' : argText.startsWith('PASSWORD') ? '{{senha}}' : (filled ? filled.value : '');
+          loaded.steps.push({ type: 'preencher', selector: selector, value: fillValue, note: '' });
+          return;
+        }
+        loaded.steps.push({ type: 'clicar', selector: selector, value: '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.getByLabel(')) {
+        const label = readQuoted(line, line.indexOf('(') + 1);
+        if (!label) return;
+        const rest = line.slice(label.end);
+        const call = rest.match(/\.(selectOption|fill)\(/);
+        if (!call) return;
+        const arg = readQuoted(rest, call.index + call[0].length);
+        loaded.steps.push({ type: call[1] === 'selectOption' ? 'escolher' : 'preencher', selector: 'text=' + label.value, value: arg ? arg.value : '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.keyboard.press(')) {
+        quoted = readQuoted(line, line.indexOf('(') + 1);
+        if (quoted) loaded.steps.push({ type: 'tecla', selector: quoted.value, value: '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.setViewportSize(')) {
+        const width = line.match(/width:\s*(\d+)/);
+        const height = line.match(/height:\s*(\d+)/);
+        if (width && height) loaded.steps.push({ type: 'tela', selector: width[1], value: height[1], note: '' });
+        return;
+      }
+      if (line.startsWith('await page.selectOption(')) {
+        const sel = readQuoted(line, line.indexOf('(') + 1);
+        const labelAt = line.indexOf('label:');
+        const label = labelAt >= 0 ? readQuoted(line, line.indexOf("'", labelAt)) : null;
+        if (sel) loaded.steps.push({ type: 'escolher', selector: sel.value, value: label ? label.value : '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.waitForURL(')) {
+        const includesAt = line.indexOf('.includes(');
+                const quoteAt = includesAt >= 0
+          ? includesAt + '.includes('.length
+          : line.indexOf('(') + 1;
+        quoted = readQuoted(line, line.indexOf("'", quoteAt) >= 0 ? line.indexOf("'", quoteAt) : quoteAt);
+        if (quoted) {
+          const route = quoted.value.replace(/^\*/, '').replace(/\*$/, '');
+          loaded.steps.push({ type: 'url', selector: route, value: '', note: '' });
+        }
+        return;
+      }
+      if (line.startsWith('await expect(page.getByText(')) {
+        const open = line.indexOf('getByText(') + 10;
+        const wanted = readQuoted(line, open);
+        if (wanted) loaded.steps.push({ type: 'aparece', selector: wanted.value, value: '', note: '' });
+        return;
+      }
+      if (line.startsWith('await expect(page.locator(')) {
+        const sel = readQuoted(line, line.indexOf('(') + 1);
+        const textAt = line.indexOf('toContainText(');
+        const text = textAt >= 0 ? readQuoted(line, textAt + 'toContainText('.length) : null;
+        if (sel) loaded.steps.push({ type: 'texto', selector: sel.value, value: text ? text.value : '', note: '' });
+        return;
+      }
+      if (line.startsWith('await page.screenshot(')) {
+        const pathAt = line.indexOf('path:');
+        quoted = pathAt >= 0 ? readQuoted(line, line.indexOf("'", pathAt)) : null;
+        const file = quoted ? quoted.value.split('/').pop().replace(/\.png$/, '') : '';
+        loaded.steps.push({ type: 'ss', selector: file, value: '', note: '' });
+        return;
+      }
+    });
+    return loaded;
+  }
+
+  function applyLoaded(loaded, fileName) {
+    if (loaded.engine) engineInput.value = loaded.engine;
+    testNameInput.value = (loaded.name || fileName || 'roteiro').replace(/\.spec\.js$/i, '').replace(/\.cy\.js$/i, '');
+    if (loaded.url) urlInput.value = loaded.url;
+    if (loaded.email) emailInput.value = loaded.email;
+    if (loaded.senha) senhaInput.value = loaded.senha;
+    steps = loaded.steps;
+    selectedStepIndex = steps.length ? 0 : -1;
+    renderList();
+    generateCode();
+    status.textContent = 'Teste carregado: ' + (fileName || testNameInput.value) + ' (' + steps.length + ' passos). Edite os passos e salve de novo.';
+  }
+
+  async function refreshSavedTests(prefer) {
+    try {
+      const res = await fetch('/api/tests');
+      if (!res.ok) return;
+      const data = await res.json();
+      const files = data.files || [];
+      const current = prefer || savedTests.value;
+      savedTests.innerHTML = '';
+      if (!files.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Nenhum teste salvo';
+        savedTests.appendChild(option);
+        return;
+      }
+      files.forEach((file) => {
+        const item = typeof file === 'string' ? { name: file, engine: 'playwright' } : file;
+        const option = document.createElement('option');
+        option.value = item.engine + '|' + item.name;
+        option.textContent = item.name.replace(/\.spec\.js$/, '');
+        savedTests.appendChild(option);
+      });
+      if (current && Array.from(savedTests.options).some((option) => option.value === current)) savedTests.value = current;
+    } catch (err) {
+      savedTests.innerHTML = '';
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = 'Abra por http://127.0.0.1:4173';
+      savedTests.appendChild(option);
+    }
+  }
+
+  async function loadSelected() {
+    const picked = savedTests.value;
+    if (!picked || picked.indexOf('|') < 0) {
+      status.textContent = 'Nenhum teste salvo para recarregar.';
+      return;
+    }
+    const engine = picked.slice(0, picked.indexOf('|'));
+    const fileName = picked.slice(picked.indexOf('|') + 1);
+    try {
+      const res = await fetch('/api/tests/file?engine=' + encodeURIComponent(engine) + '&name=' + encodeURIComponent(fileName));
+      if (!res.ok) {
+        status.textContent = 'Não foi possível ler ' + fileName + '.';
+        return;
+      }
+      const data = await res.json();
+      const loaded = parseSpec(data.code || '');
+      if (!loaded.steps.length && !loaded.url) {
+        status.textContent = 'O arquivo não tem passos reconhecidos.';
+        return;
+      }
+      applyLoaded(loaded, fileName);
+    } catch (err) {
+      status.textContent = 'Recarregue esta página em http://127.0.0.1:4173.';
+    }
+  }
+
+  on(reloadTest, 'click', () => loadSelected());
+
+  // ---------- Iniciar ----------
+  renderList();
+  generateCode();
+  refreshSavedTests().then(() => loadSelected());
+})();
+</script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const listEl = $('batchList'), runBtn = $('batchRun'), summary = $('batchSummary'), results = $('batchResults');
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const arq = (p) => '/api/arquivo?path=' + encodeURIComponent(p);
+
+  async function loadList() {
+    try {
+      const data = await (await fetch('/api/tests')).json();
+      const files = (data.files || []).filter((f) => f.engine === 'playwright');
+      const marcados = new Set(Array.from(listEl.querySelectorAll('input:checked')).map((c) => c.value));
+      const primeira = !listEl.children.length;
+      listEl.innerHTML = files.length ? '' : '<div class="step" style="color:#94a3b8">Nenhum teste salvo ainda.</div>';
+      files.forEach((f) => {
+        const row = document.createElement('label');
+        row.className = 'step';
+        row.style.cssText = 'cursor:pointer;margin:0;color:#e2e8f0;';
+        const on = primeira || marcados.has(f.name);
+        row.innerHTML = '<input type="checkbox" ' + (on ? 'checked' : '') + ' value="' + esc(f.name) + '" style="display:inline;width:auto;margin:0;" /> ' + esc(f.name.replace(/\.spec\.js$/, '')) + (f.semVerificacao ? ' <span class="badge" style="color:#f59e0b" title="Este teste só clica e não confere o resultado">⚠ sem verificação</span>' : '');
+        listEl.appendChild(row);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="step">Abra por http://127.0.0.1:4173</div>';
+    }
+  }
+  const checks = () => Array.from(listEl.querySelectorAll('input[type=checkbox]'));
+  $('batchAll').onclick = () => checks().forEach((c) => { c.checked = true; });
+  $('batchNone').onclick = () => checks().forEach((c) => { c.checked = false; });
+
+  function render(r) {
+    const ok = r.failed === 0 && r.total > 0;
+    summary.style.display = 'block';
+    summary.className = 'result ' + (ok ? 'pass' : 'fail');
+    summary.textContent = r.total + ' teste(s): ' + r.passed + ' passou(aram), ' + r.failed + ' falhou(aram)' + (r.skipped ? ', ' + r.skipped + ' ignorado(s)' : '') + '.';
+    results.innerHTML = r.items.map((i) => {
+      const good = i.status === 'passed' || i.status === 'flaky';
+      const color = good ? '#22c55e' : i.status === 'skipped' ? '#f59e0b' : '#ef4444';
+      const mark = good ? '✔' : i.status === 'skipped' ? '–' : '✘';
+      const instavel = i.status === 'flaky' ? '<div style="color:#f59e0b;font-size:0.8rem;">⚠ Passou só na 2ª tentativa. O teste ou o sistema está instável.</div>' : '';
+      const aviso = instavel + (i.semVerificacao ? '<div style="color:#f59e0b;font-size:0.8rem;">⚠ Passou, mas esse teste não verifica nada. Adicione "Verificar que aparece o texto".</div>' : '');
+      const extra = i.status === 'failed'
+        ? '<div style="margin:6px 0;color:#fca5a5;">' + (i.passo ? '<b>Falhou em:</b> ' + esc(i.passo) + '<br>' : '') + esc(i.motivo) + '</div>' +
+          '<details style="margin:4px 0;"><summary style="cursor:pointer;color:#94a3b8;font-size:0.8rem;">Detalhe técnico</summary><pre class="runner-box" style="min-height:0;margin:6px 0;">' + esc(i.error || 'Sem detalhe.') + '</pre></details>' +
+          (i.screenshot ? '<a style="color:#38bdf8" target="_blank" href="' + arq(i.screenshot) + '">Ver print da falha</a> ' : '') +
+          (i.video ? '<a style="color:#38bdf8" target="_blank" href="' + arq(i.video) + '">Ver vídeo</a>' : '')
+        : '';
+      return '<div style="border-bottom:1px solid #334155;padding:8px 4px;"><b style="color:' + color + '">' + mark + '</b> ' +
+        esc(i.title) + ' <span class="badge">' + esc(i.file) + '</span> <span class="badge">' + (i.duration / 1000).toFixed(1) + 's</span>' + aviso + extra + '</div>';
+    }).join('');
+  }
+
+  async function poll() {
+    const started = Date.now();
+    while (Date.now() - started < 1800000) {
+      await new Promise((r) => setTimeout(r, 1000));
+      const data = await (await fetch('/api/run')).json();
+      if (data.status === 'running') continue;
+      if (data.results) render(data.results);
+      else { summary.className = 'result fail'; summary.textContent = 'A execução terminou sem resultado. Detalhe: ' + (data.log || '').slice(-400); }
+      return;
+    }
+  }
+
+  runBtn.onclick = async () => {
+    const files = checks().filter((c) => c.checked).map((c) => c.value);
+    if (!files.length) { summary.style.display = 'block'; summary.className = 'result pending'; summary.textContent = 'Marque pelo menos um teste.'; return; }
+    runBtn.disabled = true;
+    results.innerHTML = '';
+    summary.style.display = 'block';
+    summary.className = 'result pending';
+    summary.textContent = 'Rodando ' + files.length + ' teste(s)...';
+    try {
+      const res = await fetch('/api/run-all', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files, headed: $('batchHeaded').checked, workers: Number($('batchWorkers').value) })
+      });
+      if (!res.ok) { summary.className = 'result fail'; summary.textContent = await res.text(); }
+      else await poll();
+    } catch (e) {
+      summary.className = 'result fail';
+      summary.textContent = 'Não foi possível iniciar. Abra por http://127.0.0.1:4173.';
+    }
+    runBtn.disabled = false;
+  };
+
+  // Credenciais: guardadas fora dos testes (credenciais.json)
+  const emailEl = $('email'), senhaEl = $('senha');
+  fetch('/api/credenciais').then((r) => r.json()).then((c) => {
+    if (c.email && !emailEl.value) emailEl.value = c.email;
+    if (c.senha && !senhaEl.value) senhaEl.value = c.senha;
+  }).catch(() => {});
+  const saveCreds = () => fetch('/api/credenciais', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: emailEl.value.trim(), senha: senhaEl.value })
+  }).catch(() => {});
+  emailEl.addEventListener('change', saveCreds);
+  senhaEl.addEventListener('change', saveCreds);
+
+  loadList();
+  setInterval(loadList, 15000);
+})();
+</script>
+</body>
+</html>

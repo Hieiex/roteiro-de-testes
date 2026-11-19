@@ -1,0 +1,14 @@
+{
+  "name": "roteiro-de-testes",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Roteiro: grave, rode e acompanhe testes do seu sistema, sem escrever código.",
+  "type": "module",
+  "scripts": {
+    "recorder": "node recorder-server.js",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.1"
+  }
+}

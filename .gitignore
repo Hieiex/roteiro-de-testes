@@ -1,0 +1,19 @@
+# Só a ferramenta vai para o repositório. Tudo o mais é ignorado por padrão,
+# inclusive os testes gravados (são da empresa), credenciais, prints e resultados.
+*
+
+!.gitignore
+!README.md
+!iniciar.bat
+!package.json
+!package-lock.json
+!playwright.config.ts
+!recorder-server.js
+!test-recorder.html
+
+!tests/
+!tests/e2e/
+tests/e2e/*
+!tests/e2e/gravados/
+tests/e2e/gravados/*
+!tests/e2e/gravados/.gitkeep
