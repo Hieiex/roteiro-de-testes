@@ -6,7 +6,7 @@ O Roteiro é para quem faz QA e quer automatizar testes sem programar. Você usa
 
 ## Instalação
 
-Você precisa do [Node.js](https://nodejs.org) (versão 18 ou mais nova). O Google Chrome é opcional: se não tiver, o Roteiro usa o navegador que ele mesmo baixa.
+Você precisa de internet na primeira vez e do [Node.js](https://nodejs.org) (versão 18 ou mais nova). No Windows, se o Node não estiver instalado, o `iniciar.bat` tenta instalá-lo sozinho (pode aparecer um pedido de permissão). Se não conseguir, ele avisa e você instala em nodejs.org (botão LTS, opções padrão). O Google Chrome é opcional: se não tiver, o Roteiro usa o navegador que ele mesmo baixa.
 
 ```bash
 git clone https://github.com/Hieiex/roteiro-de-testes.git
@@ -16,7 +16,7 @@ cd roteiro-de-testes
 **Windows:** dê duplo clique em **`iniciar.bat`**.
 **Mac/Linux:** rode `./iniciar.sh`.
 
-Na primeira vez ele instala o que falta (leva alguns minutos). O Roteiro abre sozinho no navegador, em **http://127.0.0.1:4173**. Para encerrar, feche a janela preta do terminal.
+Na primeira vez ele instala o que falta, incluindo um navegador de teste de cerca de 150 MB (leva alguns minutos). Se algo falhar, ele mostra o erro e explica o que fazer, por exemplo quando a rede da empresa bloqueia o download. O Roteiro abre sozinho no navegador, em **http://127.0.0.1:4173**. Para encerrar, feche a janela preta do terminal.
 
 Pelo terminal, se preferir: `npm install`, `npx playwright install chromium` e `npm start`.
 
