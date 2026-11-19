@@ -20,8 +20,8 @@ echo Verificando navegador de teste...
 call npx playwright install chromium >nul 2>nul
 
 echo.
-echo Abrindo o gravador em http://127.0.0.1:4173
+echo Abrindo o Roteiro em http://127.0.0.1:4173
 echo Feche esta janela para encerrar.
 start "" cmd /c "timeout /t 2 >nul & start http://127.0.0.1:4173"
-node recorder-server.js
+node servidor.js
 pause

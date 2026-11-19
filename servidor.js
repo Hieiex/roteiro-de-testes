@@ -43,6 +43,19 @@ function send(res, status, body, type) {
   res.end(body);
 }
 
+function chromeInstalled() {
+  const env = process.env;
+  const candidates = [
+    env.LOCALAPPDATA && path.join(env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    env.PROGRAMFILES && path.join(env.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    env['PROGRAMFILES(X86)'] && path.join(env['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+  ].filter(Boolean);
+  return candidates.some((file) => fs.existsSync(file));
+}
+
 function browserEnv(headed) {
   const env = { ...process.env };
   if (headed) env.PW_VER = '1';
@@ -73,7 +86,7 @@ let runState = { status: 'idle', code: null, log: '', kind: 'test', results: nul
 
 // ---------- Credenciais (ficam fora dos testes) ----------
 const credFile = path.join(root, 'credenciais.json');
-const stateDir = path.join(root, '.recorder');
+const stateDir = path.join(root, '.roteiro');
 fs.mkdirSync(stateDir, { recursive: true });
 
 function readCreds() {
@@ -733,8 +746,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/test-recorder.html')) {
-    send(res, 200, fs.readFileSync(path.join(root, 'test-recorder.html')), 'text/html; charset=utf-8');
+  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/roteiro.html')) {
+    send(res, 200, fs.readFileSync(path.join(root, 'roteiro.html')), 'text/html; charset=utf-8');
     return;
   }
 
@@ -912,7 +925,9 @@ const server = http.createServer(async (req, res) => {
     }
     const dest = path.join(playwrightDir, fileName);
     const relative = path.relative(root, dest).split(path.sep).join('/');
-    const args = ['playwright', 'codegen', '--channel', 'chrome', '--target', 'playwright-test', '--output', relative, target];
+    // Usa o Google Chrome se estiver instalado; senão, o Chromium que o Playwright baixou.
+    const channel = chromeInstalled() ? ['--channel', 'chrome'] : [];
+    const args = ['playwright', 'codegen', ...channel, '--target', 'playwright-test', '--output', relative, target];
     runState = { status: 'running', code: null, log: '', kind: 'record', file: dest, results: null };
     try {
       running = spawn('npx', args, {

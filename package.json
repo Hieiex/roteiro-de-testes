@@ -5,7 +5,7 @@
   "description": "Roteiro: grave, rode e acompanhe testes do seu sistema, sem escrever código.",
   "type": "module",
   "scripts": {
-    "recorder": "node recorder-server.js",
+    "start": "node servidor.js",
     "e2e": "playwright test"
   },
   "devDependencies": {

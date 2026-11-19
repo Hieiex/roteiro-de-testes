@@ -571,7 +571,7 @@
       status.textContent = await res.text();
       return null;
     } catch (err) {
-      // Gravador aberto fora do servidor local: cai no diálogo de arquivo.
+      // Roteiro aberto fora do servidor local: cai no diálogo de arquivo.
     }
 
     try {
@@ -594,7 +594,7 @@
     }
 
     downloadSpec(fileName, code);
-    status.textContent = 'Download de ' + fileName + '. Abra o gravador em http://127.0.0.1:4173 para salvar na pasta certa.';
+    status.textContent = 'Download de ' + fileName + '. Abra o Roteiro em http://127.0.0.1:4173 para salvar na pasta certa.';
     return null;
   }
 
@@ -665,7 +665,7 @@
       log.textContent = '';
       await watchRun(headed);
     } catch (err) {
-      status.textContent = 'Não foi possível iniciar. Abra o gravador em http://127.0.0.1:4173.';
+      status.textContent = 'Não foi possível iniciar. Abra o Roteiro em http://127.0.0.1:4173.';
     }
   }
 
@@ -698,7 +698,7 @@
       result.textContent = 'Gravando no Chrome...';
       await watchRun(true);
     } catch (err) {
-      recordStatus.textContent = 'Não foi possível abrir o gravador. Use esta página em http://127.0.0.1:4173.';
+      recordStatus.textContent = 'Não foi possível abrir o Roteiro. Use esta página em http://127.0.0.1:4173.';
     }
     recordChrome.disabled = false;
   });
@@ -724,7 +724,7 @@
       await refreshSavedTests('playwright|' + data.fileName);
       await loadSelected();
     } catch (err) {
-      recordStatus.textContent = 'Não foi possível importar. Abra o gravador em http://127.0.0.1:4173.';
+      recordStatus.textContent = 'Não foi possível importar. Abra o Roteiro em http://127.0.0.1:4173.';
     }
     chromeFile.value = '';
   });
